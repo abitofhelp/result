@@ -1,0 +1,32 @@
+-- Ada Result Library Test Project File
+-- Copyright (c) 2025 A Bit of Help, Inc.
+-- SPDX-License-Identifier: MIT
+
+with "../result.gpr";
+
+project Test is
+
+   for Source_Dirs use (".");
+   for Object_Dir use "../obj/test";
+   for Exec_Dir use ".";
+   for Main use ("comprehensive_test_result.adb");
+
+   package Compiler is
+      for Default_Switches ("Ada") use (
+         "-O0",      -- No optimization for testing
+         "-g",       -- Debug info
+         "-gnata",   -- Enable assertions
+         "-gnat2022", -- Ada 2022
+         "-gnatW8"   -- UTF-8 encoding
+      );
+   end Compiler;
+   
+   package Binder renames Result.Binder;
+
+   -- Test-specific build options
+   package Builder is
+      for Executable ("comprehensive_test_result.adb") use "comprehensive_test_result";
+      for Executable ("test_result.adb") use "test_result";
+   end Builder;
+
+end Test;

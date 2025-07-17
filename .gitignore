@@ -1,0 +1,59 @@
+# Ada/Alire build artifacts
+/obj/
+/lib/
+/share/
+*.ali
+*.o
+*.a
+*.so
+*.dll
+*.dylib
+
+# Alire artifacts and cache
+/alire/
+/config/
+alire.lock
+.alire/
+
+# Test executables
+test_result
+comprehensive_test_result
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.#*
+\#*#
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+*.log
+
+# Build profiles and temporary files
+*.tmp
+*.bak
+*.orig
+
+# Documentation build artifacts
+doc/
+docs/
+docs/_build/
+
+# Backup files
+*.backup
+*~
+
+# Coverage reports
+coverage/
+*.gcov
+*.gcda
+*.gcno
+
+# Alire publish artifacts
+*.tar.gz
+*.tar.bz2
+*.zip

@@ -1,0 +1,42 @@
+-- Ada Result Library Project File
+-- Copyright (c) 2025 A Bit of Help, Inc.
+-- SPDX-License-Identifier: MIT
+
+with "config/result_config.gpr";
+
+project Result is
+
+   for Library_Name use "result";
+   for Library_Version use "1.0.0";
+
+   for Source_Dirs use ("src/");
+   for Object_Dir use "obj/" & Result_Config.Build_Profile;
+   for Create_Missing_Dirs use "True";
+   for Library_Dir use "lib";
+
+   -- Library type configuration
+   type Library_Type_Type is ("relocatable", "static", "static-pic");
+   Library_Type : Library_Type_Type :=
+     external ("RESULT_LIBRARY_TYPE", external ("LIBRARY_TYPE", "static"));
+   for Library_Kind use Library_Type;
+
+   -- Compilation configuration
+   package Compiler is
+      for Default_Switches ("Ada") use Result_Config.Ada_Compiler_Switches;
+   end Compiler;
+
+   package Binder is
+      for Switches ("Ada") use ("-Es"); --  Symbolic traceback
+   end Binder;
+
+   -- Installation configuration
+   package Install is
+      for Artifacts (".") use ("share");
+   end Install;
+
+   -- Documentation generation
+   package Documentation is
+      for Documentation_Dir use "doc";
+   end Documentation;
+
+end Result;
