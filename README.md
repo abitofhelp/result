@@ -1,7 +1,7 @@
 # Ada Result Library
 
 > **📦 Part of the Ada Result Ecosystem**  
-> This is the **synchronous** Result library. For asynchronous operations, see the companion [**async-result**](https://github.com/your-org/async-result) package.
+> This is the **synchronous** Result library. For asynchronous operations, see the companion [**async-result**](https://github.com/abitofhelp/async-result) package.
 
 A high-performance, memory-safe Result type library for Ada that provides type-safe error handling without exceptions. Inspired by Rust's `Result<T, E>` and functional programming's `Either` patterns, optimized for maximum efficiency through Ada's OUT parameter design.
 
@@ -63,8 +63,8 @@ alr build
 2. Build with your Ada compiler:
 
 ```bash
-git clone https://github.com/your-repo/ada-result
-cd ada-result
+git clone https://github.com/abitofhelp/result
+cd result
 make build
 ```
 
@@ -448,7 +448,7 @@ Individual Result instances are **not thread-safe**. For concurrent access:
 3. **Consider message passing instead of shared state**
 
 > **💡 For Asynchronous Operations**  
-> If you need non-blocking, asynchronous error handling (futures, promises, async/await patterns), use the companion [**async-result**](https://github.com/your-org/async-result) package instead.
+> If you need non-blocking, asynchronous error handling (futures, promises, async/await patterns), use the companion [**async-result**](https://github.com/abitofhelp/async-result) package instead.
 
 ```ada
 -- Thread-safe usage pattern
