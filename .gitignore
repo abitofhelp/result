@@ -28,6 +28,9 @@ comprehensive_test_result
 .#*
 \#*#
 
+# Claude Code settings
+.claude/
+
 # OS-specific files
 .DS_Store
 Thumbs.db
