@@ -113,11 +113,15 @@ package Result is
    ----------------------------------------------------------------------------
 
    -- Returns True if the Result contains a successful value
-   function Is_Ok (R : Result_Type) return Boolean;
+   function Is_Ok (R : Result_Type) return Boolean
+     with Pre => (R.Is_Initialized),
+          Post => (Is_Ok'Result = (R.State = Success));
    pragma Inline (Is_Ok);
 
    -- Returns True if the Result contains an error
-   function Is_Error (R : Result_Type) return Boolean;
+   function Is_Error (R : Result_Type) return Boolean
+     with Pre => (R.Is_Initialized),
+          Post => (Is_Error'Result = (R.State = Error));
    pragma Inline (Is_Error);
 
    -- Returns the internal state (Success or Error)
@@ -140,11 +144,13 @@ package Result is
    
    -- Extract the value, or return a default if the Result contains an error
    function Unwrap_Or (R : Result_Type; Default : Value_Type) return Value_Type
-     with Post => (if Is_Ok (R) then Unwrap_Or'Result = Unwrap (R) else Unwrap_Or'Result = Default);
+     with Pre => (R.Is_Initialized),
+          Post => (if Is_Ok (R) then Unwrap_Or'Result = Unwrap (R) else Unwrap_Or'Result = Default);
    
    -- Extract the value into an OUT parameter, or use default if error
    procedure Unwrap_Or_Into (R : Result_Type; Default : Value_Type; Value : out Value_Type)
-     with Post => (if Is_Ok (R) then Value = Unwrap (R) else Value = Default);
+     with Pre => (R.Is_Initialized),
+          Post => (if Is_Ok (R) then Value = Unwrap (R) else Value = Default);
    
    -- Extract the value with a custom error message (raises exception if error)
    function Expect (R : Result_Type; Message : String) return Value_Type
