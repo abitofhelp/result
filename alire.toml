@@ -33,6 +33,7 @@ disabled = false
 development.runtime_checks = ["-gnato", "-gnatE", "-gnateE"]
 development.debug_info = ["-g", "-gnateV"]
 development.optimization = ["-O0"]
+development.style_checks = ["-gnatyn"]
 
 # Validation profile  
 validation.runtime_checks = ["-gnato", "-gnatE", "-gnateE", "-gnatVa"]
