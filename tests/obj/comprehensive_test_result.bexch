@@ -1,0 +1,22 @@
+[GENERATED OBJECT FILE]
+b__comprehensive_test_result.o
+[PROJECT FILES]
+/Users/mike/Ada/github.com/abitofhelp/result/tests/result_tests.gpr
+20250718044439 1849e96c1bfd4a03a7b306e1381ae0f6
+/Users/mike/Ada/github.com/abitofhelp/result/config/result_config.gpr
+20250718045052 a8e60927488e94ad10baba5807d7b01b
+/Users/mike/Ada/github.com/abitofhelp/result/result.gpr
+20250717075028 4edf28d4ea4ce843466927e42029a2dc
+[BOUND OBJECT FILES]
+/Users/mike/Ada/github.com/abitofhelp/result/tests/obj/comprehensive_test_result.o
+[GENERATED SOURCE FILES]
+b__comprehensive_test_result.ads
+b__comprehensive_test_result.adb
+b__comprehensive_test_result.ali
+[RESULTING OPTIONS]
+-L/Users/mike/Ada/github.com/abitofhelp/result/tests/obj/
+-L/Users/mike/Ada/github.com/abitofhelp/result/tests/obj/
+-L/Users/mike/Ada/github.com/abitofhelp/result/lib/
+-L/users/mike/.local/share/alire/toolchains/gnat_native_15.1.2_2166c311/lib/gcc/x86_64-apple-darwin22.6.0/15.1.0/adalib/
+-static
+/users/mike/.local/share/alire/toolchains/gnat_native_15.1.2_2166c311/lib/gcc/x86_64-apple-darwin22.6.0/15.1.0/adalib/libgnat.a

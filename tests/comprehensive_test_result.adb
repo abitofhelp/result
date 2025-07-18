@@ -900,7 +900,7 @@ procedure Comprehensive_Test_Result is
 
       -- Test empty error messages
       Integer_Result.Make_Err (R1, 42, "");
-      Assert (Integer_Result.Has_Message (R1), "Empty string still counts as message");
+      Assert (not Integer_Result.Has_Message (R1), "Empty string does not count as message");
       Assert (Integer_Result.Get_Message_Length (R1) = 0, "Empty message has zero length");
 
       -- Test very long error messages

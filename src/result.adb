@@ -13,15 +13,35 @@
 -- result.adb
 -- Generic Result type package body for robust error handling
 --
+-- @summary
 -- This implementation provides comprehensive error handling capabilities
 -- while maintaining high performance through careful memory management
 -- and exception safety guarantees.
 --
--- Implementation Notes:
+-- @implementation_strategy
+-- The implementation uses Ada's controlled types to provide automatic resource
+-- management following the RAII (Resource Acquisition Is Initialization) pattern.
+-- All operations are designed to be exception-safe and provide strong guarantees
+-- about resource cleanup and state consistency.
+--
+-- @performance_optimizations
 --   * Uses controlled types for automatic resource management
 --   * Implements zero-copy operations through OUT parameters
 --   * Provides exception-safe cleanup in all error paths
 --   * Optimized for both small and large data types
+--   * Targeted pragma suppressions for performance-critical sections
+--   * Inline pragmas for frequently called functions
+--
+-- @memory_safety
+--   * All allocations are automatically managed
+--   * No manual memory management required
+--   * Deep copying handled automatically for controlled types
+--   * Exception-safe operations guarantee no resource leaks
+--
+-- @thread_safety
+--   * Individual Result instances are not thread-safe
+--   * No global state - all operations work on instance data
+--   * Safe for concurrent access to different Result instances
 
 with Ada.Exceptions; use Ada.Exceptions;
 
@@ -37,8 +57,22 @@ package body Result is
 
    ----------------------------------------------------------------------------
    -- INTERNAL VALIDATION HELPERS
+   -- These procedures provide runtime validation of Result state consistency
    ----------------------------------------------------------------------------
 
+   -- @procedure Ensure_Valid_State
+   --
+   -- Validates that a Result instance is in a consistent, initialized state.
+   -- Used internally by other operations to ensure data integrity.
+   --
+   -- @param R The Result instance to validate
+   -- @raises Invalid_State_Error if R is not properly initialized
+   -- @raises Invalid_State_Error if R is in an inconsistent state
+   --
+   -- @implementation_notes
+   --   * Called by most public operations to ensure safety
+   --   * Inlined for performance in release builds
+   --   * Performs both initialization and consistency checks
    procedure Ensure_Valid_State (R : Result_Type) is
    begin
       if not R.Is_Initialized then
@@ -51,6 +85,19 @@ package body Result is
    end Ensure_Valid_State;
    pragma Inline (Ensure_Valid_State);
 
+   -- @procedure Ensure_Success_State
+   --
+   -- Validates that a Result instance contains a successful value.
+   -- Used by operations that require a successful Result.
+   --
+   -- @param R The Result instance to validate
+   -- @raises Invalid_State_Error if R is not properly initialized
+   -- @raises Result_Error if R contains an error instead of a value
+   --
+   -- @implementation_notes
+   --   * Includes descriptive error message when available
+   --   * Calls Ensure_Valid_State first for comprehensive validation
+   --   * Inlined for performance in release builds
    procedure Ensure_Success_State (R : Result_Type) is
    begin
       Ensure_Valid_State (R);
@@ -65,6 +112,19 @@ package body Result is
    end Ensure_Success_State;
    pragma Inline (Ensure_Success_State);
 
+   -- @procedure Ensure_Error_State
+   --
+   -- Validates that a Result instance contains an error.
+   -- Used by operations that require an error Result.
+   --
+   -- @param R The Result instance to validate
+   -- @raises Invalid_State_Error if R is not properly initialized
+   -- @raises Result_Error if R contains a value instead of an error
+   --
+   -- @implementation_notes
+   --   * Calls Ensure_Valid_State first for comprehensive validation
+   --   * Inlined for performance in release builds
+   --   * Less common than Ensure_Success_State but important for error extraction
    procedure Ensure_Error_State (R : Result_Type) is
    begin
       Ensure_Valid_State (R);
@@ -76,8 +136,24 @@ package body Result is
 
    ----------------------------------------------------------------------------
    -- MEMORY MANAGEMENT (RAII PATTERN)
+   -- These procedures implement automatic resource management for Result instances
    ----------------------------------------------------------------------------
 
+   -- @procedure Initialize
+   --
+   -- Initializes a new Result instance to a safe default state.
+   -- This is called automatically by the Ada runtime when a Result is created.
+   --
+   -- @param Object The Result instance being initialized
+   --
+   -- @implementation_notes
+   --   * Initializes to Error state for safety (fail-closed principle)
+   --   * Uses generic Default_Value and Default_Error functions
+   --   * Ensures Is_Initialized flag is set for validation
+   --   * Cannot raise exceptions (controlled type requirement)
+   --
+   -- @thread_safety Safe - each instance initialized independently
+   -- @complexity O(1) plus cost of Default_Value and Default_Error
    overriding
    procedure Initialize (Object : in out Result_Type) is
    begin
@@ -91,6 +167,21 @@ package body Result is
       Object.Needs_Cleanup := False;
    end Initialize;
 
+   -- @procedure Adjust
+   --
+   -- Handles deep copying when a Result is copied (assignment, parameter passing).
+   -- This is called automatically by the Ada runtime for controlled types.
+   --
+   -- @param Object The Result instance being copied
+   --
+   -- @implementation_notes
+   --   * Uses Copy_Value and Copy_Error functions for deep copying
+   --   * Handles both success and error states appropriately
+   --   * Maintains message information during copying
+   --   * Cannot raise exceptions (controlled type requirement)
+   --
+   -- @thread_safety Safe - each instance copied independently
+   -- @complexity O(1) plus cost of Copy_Value/Copy_Error functions
    overriding
    procedure Adjust (Object : in out Result_Type) is
    begin

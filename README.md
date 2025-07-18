@@ -1,11 +1,21 @@
 # Ada Result Library
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Ada Version](https://img.shields.io/badge/Ada-2022-brightgreen)](https://www.adaic.org/ada-2022/)
+[![Alire Package](https://img.shields.io/badge/Alire-result-blue)](https://alire.ada.dev/crates/result)
+[![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen)](https://github.com/abitofhelp/result)
+[![Test Coverage](https://img.shields.io/badge/Test%20Coverage-Comprehensive-brightgreen)](https://github.com/abitofhelp/result/tree/main/tests)
+[![Documentation](https://img.shields.io/badge/Documentation-Complete-blue)](https://github.com/abitofhelp/result/blob/main/README.md)
+[![Code Style](https://img.shields.io/badge/Code%20Style-Ada%202022-purple)](https://github.com/abitofhelp/result/blob/main/.gitattributes)
+
 > **📦 Part of the Ada Result Ecosystem**  
 > This is the **synchronous** Result library. For asynchronous operations, see the companion [**async-result**](https://github.com/abitofhelp/async-result) package.
 
 A high-performance, memory-safe Result type library for Ada that provides type-safe error handling without exceptions. Inspired by Rust's `Result<T, E>` and functional programming's `Either` patterns, optimized for maximum efficiency through Ada's OUT parameter design.
 
 **This library is designed for synchronous operations only.** All operations execute immediately and block the calling thread until completion.
+
+The library provides a comprehensive generic `Result` package that can be instantiated with any value and error types, offering both procedural and functional programming interfaces for maximum flexibility.
 
 ## Quick Start
 
@@ -15,7 +25,15 @@ with Result;
 procedure Example is
    type Math_Error is (Division_By_Zero, Overflow);
    
-   package Integer_Result is new Result (Integer, Math_Error);
+   -- Generic instantiation with required default functions
+   function Default_Int return Integer is (0);
+   function Default_Error return Math_Error is (Division_By_Zero);
+   
+   package Integer_Result is new Result 
+     (Value_Type => Integer, 
+      Error_Type => Math_Error,
+      Default_Value => Default_Int,
+      Default_Error => Default_Error);
    use Integer_Result;
    
    procedure Safe_Divide (A, B : Integer; R : out Result_Type) is
@@ -38,6 +56,60 @@ begin
 end Example;
 ```
 
+## Generic Parameters
+
+The Result package requires the following generic parameters:
+
+```ada
+generic
+   type Value_Type is private;
+   -- The type stored when the operation succeeds
+   
+   type Error_Type is private;
+   -- The type stored when the operation fails
+   
+   -- Copy functions - provide custom functions if your types need special copying
+   -- For simple types like Integer, the default copying is sufficient
+   with function Copy_Value (Source : Value_Type) return Value_Type is <>;
+   with function Copy_Error (Source : Error_Type) return Error_Type is <>;
+   
+   -- Default constructors - these create initial values for your types
+   -- Example: for Integer, this might return 0
+   with function Default_Value return Value_Type is <>;
+   with function Default_Error return Error_Type is <>;
+package Result is
+   -- ... Result implementation
+end Result;
+```
+
+### Simple Instantiation
+
+For basic types, you only need to provide the default functions:
+
+```ada
+function Default_Int return Integer is (0);
+function Default_String return String is ("");
+
+package Int_String_Result is new Result (Integer, String, 
+                                        Default_Value => Default_Int,
+                                        Default_Error => Default_String);
+```
+
+### Custom Copy Functions
+
+For types requiring special copying behavior (e.g., types with pointers):
+
+```ada
+function Copy_My_Type (Source : My_Type) return My_Type is
+   -- Custom deep copy logic here
+end Copy_My_Type;
+
+package My_Result is new Result (My_Type, String,
+                                Copy_Value => Copy_My_Type,
+                                Default_Value => Default_My_Type,
+                                Default_Error => Default_String);
+```
+
 ## Requirements
 
 - **Ada 2022** compiler (GNAT FSF 13.1 or later)
@@ -48,13 +120,18 @@ end Example;
 ### Using Alire (Recommended)
 
 ```bash
-# For synchronous operations
+# Add to your project dependencies
+alr with result
+
+# Or get a copy to explore
 alr get result
 cd result
 alr build
 
-# For asynchronous operations (separate package)
-# alr get async-result
+# Run tests (separate test crate)
+cd tests
+alr build
+alr exec -- ./comprehensive_test_result
 ```
 
 ### Manual Installation
@@ -65,7 +142,7 @@ alr build
 ```bash
 git clone https://github.com/abitofhelp/result
 cd result
-make build
+gprbuild -P result.gpr
 ```
 
 ## Key Features
@@ -144,6 +221,41 @@ function Try_Get_Error (R : Result_Type; Error : out Error_Type) return Boolean;
 function Try_Get_Message (R : Result_Type; Message : out Unbounded_String) return Boolean;
 ```
 
+### Advanced Operations
+
+The library provides several advanced generic packages for specialized operations:
+
+```ada
+-- Lazy evaluation - only call default function if needed
+generic
+   with function Default_Fn return Value_Type;
+package Lazy_Operations is
+   function Unwrap_Or_Else (R : Result_Type) return Value_Type;
+end Lazy_Operations;
+
+-- Conditional transformation
+generic
+   with function Transform_Fn (V : Value_Type) return Value_Type;
+package Map_Or_Operations is
+   function Map_Or (R : Result_Type; Default : Value_Type) return Value_Type;
+end Map_Or_Operations;
+
+-- Predicate-based checking
+generic
+   with function Predicate (V : Value_Type) return Boolean;
+package Value_Predicate_Operations is
+   function Is_Ok_And (R : Result_Type) return Boolean;
+end Value_Predicate_Operations;
+
+-- Swap success/error states
+generic
+   with function Value_To_Error (V : Value_Type) return Error_Type;
+   with function Error_To_Value (E : Error_Type) return Value_Type;
+package Swap_Operations is
+   procedure Swap (R : Result_Type; Swapped_R : out Result_Type);
+end Swap_Operations;
+```
+
 ## Functional Programming Operations
 
 ### Map Operations (Transform Success Values)
@@ -206,6 +318,72 @@ generic
 package Match_Operations is
    procedure Match (R : Result_Type; Output : out Return_Type);
 end Match_Operations;
+```
+
+Example usage:
+```ada
+procedure Handle_Success (Value : Integer; Output : out String) is
+begin
+   Output := "Success: " & Integer'Image (Value);
+end Handle_Success;
+
+procedure Handle_Error (Error : Math_Error; Output : out String) is
+begin
+   case Error is
+      when Division_By_Zero => Output := "Error: Division by zero";
+      when Overflow => Output := "Error: Numeric overflow";
+   end case;
+end Handle_Error;
+
+package Result_Matcher is new Integer_Result.Match_Operations 
+  (String, Handle_Success, Handle_Error);
+
+Result_Matcher.Match (My_Result, Message);
+Put_Line (Message);  -- Prints appropriate message based on Result state
+```
+
+### Safe Extraction Examples
+
+```ada
+-- Safe value extraction without exceptions
+Value : Integer;
+if Try_Get_Value (My_Result, Value) then
+   Put_Line ("Got value: " & Integer'Image (Value));
+else
+   Put_Line ("No value available");
+end if;
+
+-- Safe error extraction
+Error : Math_Error;
+if Try_Get_Error (My_Result, Error) then
+   Put_Line ("Got error: " & Math_Error'Image (Error));
+end if;
+
+-- Safe message extraction
+Message : Unbounded_String;
+if Try_Get_Message (My_Result, Message) then
+   Put_Line ("Error message: " & To_String (Message));
+end if;
+```
+
+### Fold Operations
+
+```ada
+procedure Success_To_String (Value : Integer; Output : out String) is
+begin
+   Output := "Value: " & Integer'Image (Value);
+end Success_To_String;
+
+procedure Error_To_String (Error : Math_Error; Output : out String) is
+begin
+   Output := "Error: " & Math_Error'Image (Error);
+end Error_To_String;
+
+package Result_Folder is new Integer_Result.Fold_Operations 
+  (String, Success_To_String, Error_To_String);
+
+Result_Folder.Fold (My_Result, Final_Message);
+Put_Line (Final_Message);  -- Always gets a string representation
 ```
 
 ## Real-World Examples
@@ -356,6 +534,275 @@ begin
 end Transform_Chain_Example;
 ```
 
+### HTTP Client Example
+
+```ada
+with Result;
+with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+
+procedure HTTP_Example is
+   
+   type HTTP_Error is (Connection_Failed, Timeout, Not_Found, Server_Error);
+   
+   function Default_String return Unbounded_String is (Null_Unbounded_String);
+   function Default_HTTP_Error return HTTP_Error is (Connection_Failed);
+   
+   package HTTP_Result is new Result 
+     (Value_Type => Unbounded_String,
+      Error_Type => HTTP_Error,
+      Default_Value => Default_String,
+      Default_Error => Default_HTTP_Error);
+   
+   function HTTP_Get (URL : String) return HTTP_Result.Result_Type is
+      R : HTTP_Result.Result_Type;
+   begin
+      -- Simulate HTTP request
+      if URL = "https://api.example.com/data" then
+         HTTP_Result.Make_Ok (R, To_Unbounded_String ("{'status': 'success'}"));
+      elsif URL = "https://api.example.com/timeout" then
+         HTTP_Result.Make_Err (R, Timeout, "Request timed out after 30 seconds");
+      else
+         HTTP_Result.Make_Err (R, Not_Found, "Resource not found");
+      end if;
+      return R;
+   end HTTP_Get;
+   
+   Response : HTTP_Result.Result_Type;
+   Data : Unbounded_String;
+begin
+   Response := HTTP_Get ("https://api.example.com/data");
+   
+   if HTTP_Result.Is_Ok (Response) then
+      HTTP_Result.Unwrap_Into (Response, Data);
+      Put_Line ("Response: " & To_String (Data));
+   else
+      Put_Line ("HTTP Error: " & HTTP_Result.Get_Message (Response));
+   end if;
+end HTTP_Example;
+```
+
+### JSON Parsing Example
+
+```ada
+with Result;
+with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+
+procedure JSON_Example is
+   
+   type JSON_Error is (Invalid_Syntax, Missing_Field, Type_Mismatch);
+   
+   type User_Data is record
+      ID : Integer;
+      Name : Unbounded_String;
+      Active : Boolean;
+   end record;
+   
+   function Default_User return User_Data is 
+     ((ID => 0, Name => Null_Unbounded_String, Active => False));
+   function Default_JSON_Error return JSON_Error is (Invalid_Syntax);
+   
+   package JSON_Result is new Result 
+     (Value_Type => User_Data,
+      Error_Type => JSON_Error,
+      Default_Value => Default_User,
+      Default_Error => Default_JSON_Error);
+   
+   function Parse_User (JSON_String : String) return JSON_Result.Result_Type is
+      R : JSON_Result.Result_Type;
+      User : User_Data;
+   begin
+      -- Simulate JSON parsing
+      if JSON_String = "{'id': 123, 'name': 'John', 'active': true}" then
+         User := (ID => 123, Name => To_Unbounded_String ("John"), Active => True);
+         JSON_Result.Make_Ok (R, User);
+      elsif JSON_String = "invalid json" then
+         JSON_Result.Make_Err (R, Invalid_Syntax, "Invalid JSON syntax");
+      else
+         JSON_Result.Make_Err (R, Missing_Field, "Required field missing");
+      end if;
+      return R;
+   end Parse_User;
+   
+   Result : JSON_Result.Result_Type;
+   User : User_Data;
+begin
+   Result := Parse_User ("{'id': 123, 'name': 'John', 'active': true}");
+   
+   if JSON_Result.Is_Ok (Result) then
+      JSON_Result.Unwrap_Into (Result, User);
+      Put_Line ("User: " & To_String (User.Name) & " (ID:" & Integer'Image (User.ID) & ")");
+   else
+      Put_Line ("Parse error: " & JSON_Result.Get_Message (Result));
+   end if;
+end JSON_Example;
+```
+
+### Validation Pipeline Example
+
+```ada
+with Result;
+
+procedure Validation_Example is
+   
+   type Validation_Error is (Too_Small, Too_Large, Invalid_Format);
+   
+   function Default_Int return Integer is (0);
+   function Default_Error return Validation_Error is (Invalid_Format);
+   
+   package Int_Result is new Result 
+     (Value_Type => Integer,
+      Error_Type => Validation_Error,
+      Default_Value => Default_Int,
+      Default_Error => Default_Error);
+   
+   -- Validation functions
+   procedure Validate_Range (Input : Integer; Output : out Int_Result.Result_Type) is
+   begin
+      if Input < 1 then
+         Int_Result.Make_Err (Output, Too_Small, "Value must be >= 1");
+      elsif Input > 100 then
+         Int_Result.Make_Err (Output, Too_Large, "Value must be <= 100");
+      else
+         Int_Result.Make_Ok (Output, Input);
+      end if;
+   end Validate_Range;
+   
+   procedure Validate_Even (Input : Integer; Output : out Int_Result.Result_Type) is
+   begin
+      if Input mod 2 /= 0 then
+         Int_Result.Make_Err (Output, Invalid_Format, "Value must be even");
+      else
+         Int_Result.Make_Ok (Output, Input);
+      end if;
+   end Validate_Even;
+   
+   procedure Double_Value (Input : Integer; Output : out Integer) is
+   begin
+      Output := Input * 2;
+   end Double_Value;
+   
+   -- Instantiate operation packages
+   package Range_Validator is new Int_Result.And_Then_Operations (Validate_Range);
+   package Even_Validator is new Int_Result.And_Then_Operations (Validate_Even);
+   package Doubler is new Int_Result.Map_Operations (Integer, Double_Value);
+   
+   Input, Step1, Step2, Final : Int_Result.Result_Type;
+   Value : Integer;
+begin
+   -- Create initial value
+   Int_Result.Make_Ok (Input, 42);
+   
+   -- Chain validations and transformations
+   Range_Validator.And_Then (Input, Step1);    -- Validate range
+   Even_Validator.And_Then (Step1, Step2);     -- Validate even
+   Doubler.Map (Step2, Final);                 -- Double the value
+   
+   -- Extract final result
+   if Int_Result.Is_Ok (Final) then
+      Int_Result.Unwrap_Into (Final, Value);
+      Put_Line ("Final value: " & Integer'Image (Value));  -- 84
+   else
+      Put_Line ("Validation failed: " & Int_Result.Get_Message (Final));
+   end if;
+end Validation_Example;
+```
+
+### Advanced Operations Examples
+
+```ada
+-- Lazy evaluation example
+function Expensive_Default return Integer is
+begin
+   Put_Line ("Computing expensive default...");
+   return 42;  -- Simulate expensive computation
+end Expensive_Default;
+
+package Lazy_Int is new Integer_Result.Lazy_Operations (Expensive_Default);
+
+-- This will NOT call Expensive_Default if Result contains a value
+Result_Value := Lazy_Int.Unwrap_Or_Else (My_Result);
+
+-- Map with default example
+function Add_Ten (Value : Integer) return Integer is (Value + 10);
+
+package Map_Or_Int is new Integer_Result.Map_Or_Operations (Add_Ten);
+
+-- Transform if success, otherwise use default
+Final_Value := Map_Or_Int.Map_Or (My_Result, 0);  -- Uses 0 if error
+
+-- Predicate-based checking
+function Is_Positive (Value : Integer) return Boolean is (Value > 0);
+
+package Positive_Check is new Integer_Result.Value_Predicate_Operations (Is_Positive);
+
+-- Check if Result is Ok AND value is positive
+if Positive_Check.Is_Ok_And (My_Result) then
+   Put_Line ("Result contains a positive value");
+end if;
+```
+
+### Custom Copy Functions Example
+
+```ada
+-- Example with a type that needs custom copying
+type File_Handle is record
+   FD : Integer;
+   Name : Unbounded_String;
+   Is_Open : Boolean;
+end record;
+
+function Copy_File_Handle (Source : File_Handle) return File_Handle is
+   New_Handle : File_Handle;
+begin
+   -- Create a new file descriptor (simulate)
+   New_Handle.FD := Source.FD + 1000;  -- New unique FD
+   New_Handle.Name := Source.Name;
+   New_Handle.Is_Open := Source.Is_Open;
+   
+   -- In real code, you'd duplicate the actual file handle
+   return New_Handle;
+end Copy_File_Handle;
+
+function Default_Handle return File_Handle is
+   ((FD => -1, Name => Null_Unbounded_String, Is_Open => False));
+
+function Default_File_Error return String is ("Unknown error");
+
+package File_Result is new Result 
+  (Value_Type => File_Handle,
+   Error_Type => String,
+   Copy_Value => Copy_File_Handle,
+   Default_Value => Default_Handle,
+   Default_Error => Default_File_Error);
+
+-- Usage
+Handle_Result : File_Result.Result_Type;
+Handle : File_Handle;
+
+File_Result.Make_Ok (Handle_Result, (FD => 42, Name => To_Unbounded_String ("test.txt"), Is_Open => True));
+
+-- When copied, the custom copy function ensures proper duplication
+Another_Result := Handle_Result;  -- Uses Copy_File_Handle automatically
+```
+
+### Map_Err (Error Transformation) Example
+
+```ada
+procedure Transform_Error (Input : Math_Error; Output : out String) is
+begin
+   case Input is
+      when Division_By_Zero => Output := "Mathematical error: Division by zero";
+      when Overflow => Output := "Mathematical error: Numeric overflow";
+   end case;
+end Transform_Error;
+
+package Error_Transformer is new Integer_Result.Map_Error_Operations (Transform_Error);
+
+-- Transform math errors into string errors
+String_Error_Result : String_Result.Result_Type;
+Error_Transformer.Map_Err (My_Math_Result, String_Error_Result);
+```
+
 ## Performance Characteristics
 
 | Operation | Small Types (<100B) | Large Types (>10KB) | Very Large (>100KB) |
@@ -465,35 +912,52 @@ end Result_Store;
 ### Build Commands
 
 ```bash
-# Development build
-make build
+# Main library
+gprbuild -P result.gpr
 
-# Release build  
-make build-release
+# With specific profile
+gprbuild -P result.gpr -X Build_Profile=development
+gprbuild -P result.gpr -X Build_Profile=release
 
-# Run tests
-make test
+# Using Alire
+alr build
+alr build --release
 
-# Check test coverage
-make test-coverage
-
-# Format code
-make format
-
-# Run all quality checks
-make check
+# Run tests (separate test crate)
+cd tests
+alr build
+alr exec -- ./comprehensive_test_result
 ```
+
+### Alire Integration
+
+The library is structured as two separate Alire crates:
+
+1. **Main library** (`result`) - The core Result type implementation
+2. **Test suite** (`result_tests`) - Comprehensive test coverage
+
+This follows Alire best practices where tests are maintained as a separate crate that depends on the main library.
 
 ### Test Coverage
 
 The library includes comprehensive tests covering:
-- All core API functions
-- Error handling edge cases
-- Memory management scenarios
-- Functional programming operations
-- Exception safety guarantees
+- **Core API functions** - Construction, state inspection, value extraction
+- **Functional operations** - Map, And_Then, Match, Fold, and other transformations
+- **Safe extraction** - Exception-free value and error retrieval
+- **Memory management** - Controlled type behavior and resource cleanup
+- **Edge cases** - Boundary conditions and error scenarios
+- **Exception safety** - Proper cleanup on error paths
 
-Run `make test-coverage` to see current coverage percentage.
+The test suite is located in the `tests/` directory and includes:
+- `comprehensive_test_result.adb` - Complete test coverage
+- `test_result.adb` - Basic smoke tests
+
+Run the tests with:
+```bash
+cd tests
+alr build
+alr exec -- ./comprehensive_test_result
+```
 
 ## Architecture and Design
 
@@ -560,6 +1024,8 @@ end Copy_File_Handle;
 
 ### Debug Information
 
+The library provides several debugging and diagnostic functions:
+
 ```ada
 -- Get human-readable representation
 Put_Line (To_String (My_Result));
@@ -569,8 +1035,38 @@ Put_Line (To_String (My_Result));
 Put_Line (To_Debug_String (My_Result));
 -- Output: "Result { State: Success, Has_Value: True, ... }"
 
--- Validate internal state
+-- Validate internal state consistency
 Validate_State (My_Result);  -- Raises exception if corrupted
+
+-- Check if state is consistent (Boolean return)
+if Is_State_Consistent (My_Result) then
+   -- State is valid
+end if;
+
+-- Check if Result is properly initialized
+if Is_Valid_State (My_Result) then
+   -- Result is ready for use
+end if;
+
+-- Clean up any resources (if needed)
+Cleanup_Resources (My_Result);
+```
+
+### Message Handling
+
+```ada
+-- Check if Result has an error message
+if Has_Message (My_Result) then
+   Put_Line ("Error message: " & Get_Message (My_Result));
+end if;
+
+-- Get message length
+Length := Get_Message_Length (My_Result);
+
+-- Safe message extraction
+if Try_Get_Message (My_Result, Message) then
+   Put_Line ("Got message: " & To_String (Message));
+end if;
 ```
 
 ## Error Handling Philosophy

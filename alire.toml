@@ -1,6 +1,6 @@
 name = "result"
 description = "High-performance Result<T,E> type for Ada with type-safe error handling"
-version = "1.0.0"
+version = "1.0.1"
 
 authors = ["A Bit of Help, Inc."]
 maintainers = ["Michael Gardner <mjgardner@abitofhelp.com>"]
@@ -54,14 +54,6 @@ release.debug_info = ["-g1"]
 [environment]
 # No special environment needed
 
-# Available executables (tests)
-[[actions]]
-type = "test" 
-command = ["gprbuild", "-P", "tests/test.gpr", "-p"]
-directory = "."
-
-[[actions]]
-type = "post-build"
-command = ["echo", "Ada Result library built successfully. Run tests with: cd tests && ./comprehensive_test_result"]
+# Tests are available as a separate crate in the tests/ directory
 
 # Origin will be filled by alr publish

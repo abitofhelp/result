@@ -2,12 +2,12 @@
 -- Copyright (c) 2025 A Bit of Help, Inc.
 -- SPDX-License-Identifier: MIT
 
-with "../result.gpr";
+with "result";
 
-project Test is
+project Result_Tests is
 
    for Source_Dirs use (".");
-   for Object_Dir use "../obj/test";
+   for Object_Dir use "obj";
    for Exec_Dir use ".";
    for Main use ("comprehensive_test_result.adb");
 
@@ -20,8 +20,6 @@ project Test is
          "-gnatW8"   -- UTF-8 encoding
       );
    end Compiler;
-   
-   package Binder renames Result.Binder;
 
    -- Test-specific build options
    package Builder is
@@ -29,4 +27,4 @@ project Test is
       for Executable ("test_result.adb") use "test_result";
    end Builder;
 
-end Test;
+end Result_Tests;

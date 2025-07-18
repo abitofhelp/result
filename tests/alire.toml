@@ -1,0 +1,33 @@
+name = "result_tests"
+description = "Test suite for the Ada Result library"
+version = "1.0.1"
+
+authors = ["A Bit of Help, Inc."]
+maintainers = ["Michael Gardner <mjgardner@abitofhelp.com>"]
+maintainers-logins = ["abitofhelp"]
+licenses = "MIT"
+website = "https://github.com/abitofhelp/result"
+tags = ["test", "result", "error-handling"]
+
+[[depends-on]]
+result = "*"
+
+[[pins]]
+result = { path = ".." }
+
+[[actions]]
+type = "test"
+command = ["gprbuild", "-P", "result_tests.gpr", "-p"]
+
+[[actions]]
+type = "post-build"
+command = ["./comprehensive_test_result"]
+
+[build-switches]
+"*".ada_version = ["-gnat2022"]
+"*".style_checks = ["-gnatyM120", "-gnatya", "-gnatyb", "-gnatyc", "-gnatye", "-gnatyf", "-gnatyh", "-gnatyi", "-gnatyk", "-gnatyl", "-gnatym", "-gnatyn", "-gnatyp", "-gnatyr", "-gnatys", "-gnatyt", "-gnatyu"]
+"*".contracts = ["-gnata"]
+
+development.runtime_checks = ["-gnato", "-gnatE", "-gnateE"]
+development.debug_info = ["-g", "-gnateV"]
+development.optimization = ["-O0"]

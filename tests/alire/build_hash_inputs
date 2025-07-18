@@ -1,0 +1,5 @@
+dependency:result=1.0.0=7e882c535ac6da2e5446b0a8cda8fe455ca2273346c3138a661335465c1ca37a
+external:LIBRARY_TYPE=default
+external:RESULT_TESTS_LIBRARY_TYPE=default
+profile:result_tests=DEVELOPMENT
+switches:result_tests=-O0,-g,-gnat2022,-gnatE,-gnatVa,-gnatW8,-gnata,-gnateE,-gnateV,-gnato,-gnatw.X,-gnatwa,-gnatyM120,-gnatya,-gnatyb,-gnatyc,-gnatye,-gnatyf,-gnatyh,-gnatyi,-gnatyk,-gnatyl,-gnatym,-gnatyn,-gnatyp,-gnatyr,-gnatys,-gnatyt,-gnatyu
