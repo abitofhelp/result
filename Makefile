@@ -177,7 +177,7 @@ clean:
 .PHONY: clean-all
 clean-all: clean
 	@echo "$(BLUE)Cleaning all artifacts including dependencies...$(NC)"
-	@rm -rf alire/cache/ alire/tmp/
+	@rm -rf alire/cache/ alire/tmp/ doc/api/
 	@echo "$(GREEN)Deep clean completed$(NC)"
 
 # Test targets
@@ -185,7 +185,12 @@ clean-all: clean
 test-build:
 	@echo "$(BLUE)🔨 Building test executable...$(NC)"
 	@mkdir -p tests/obj
-	@alr exec -- gprbuild -P tests/result_tests.gpr
+	@if command -v alr > /dev/null 2>&1; then \
+		alr exec -- gprbuild -P tests/result_tests.gpr; \
+	else \
+		echo "$(RED)❌ alr not found. Please install Alire$(NC)"; \
+		exit 1; \
+	fi
 	@echo "$(GREEN)✅ Test build completed$(NC)"
 
 .PHONY: test
@@ -222,8 +227,8 @@ test-coverage:
 	@echo "$(YELLOW)Analyzing Result library API coverage...$(NC)"
 	@mkdir -p $(COVERAGE_DIR)
 	@public_functions=$$(grep -E "^[[:space:]]*(function|procedure).*;" src/result.ads | grep -v "private" | wc -l | tr -d ' '); \
-	core_tests=$$(grep -c "procedure Test_" tests/comprehensive_test_result.adb); \
-	enhanced_tests=$$(grep -c "Test_Enhanced_" tests/comprehensive_test_result.adb); \
+	core_tests=$$(grep -c "procedure Test_" tests/comprehensive_test_result.adb 2>/dev/null || echo "0"); \
+	enhanced_tests=$$(grep -c "Test_Enhanced_" tests/comprehensive_test_result.adb 2>/dev/null || echo "0"); \
 	total_test_procedures=$$(($$core_tests + $$enhanced_tests)); \
 	echo "$(GREEN)📈 Public API functions: $$public_functions$(NC)"; \
 	echo "$(GREEN)🧪 Test procedures: $$total_test_procedures$(NC)"; \
@@ -350,8 +355,8 @@ docs-serve: docs
 docs-check:
 	@echo "$(BLUE)🔍 Checking documentation completeness...$(NC)"
 	@echo "$(YELLOW)Checking for undocumented public APIs...$(NC)"
-	@documented_items=$$(grep -c "^[[:space:]]*--[[:space:]]*@" src/result.ads); \
-	public_items=$$(grep -c "^[[:space:]]*(function|procedure|type)" src/result.ads | grep -v "private"); \
+	@documented_items=$$(grep -c "^[[:space:]]*--[[:space:]]*@" src/result.ads 2>/dev/null || echo "0"); \
+	public_items=$$(grep -c "^[[:space:]]*(function|procedure|type)" src/result.ads 2>/dev/null | grep -v "private" || echo "0"); \
 	echo "$(GREEN)📊 Documented items: $$documented_items$(NC)"; \
 	echo "$(GREEN)📊 Public items: $$public_items$(NC)"; \
 	if [ $$documented_items -ge $$public_items ]; then \
