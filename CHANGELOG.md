@@ -5,6 +5,42 @@ All notable changes to the Ada Result library will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.3] - 2025-01-19
+
+### Changed
+- Updated Makefile to use `alr exec --` for all GNAT tools
+- Enhanced help system to show unavailable tools in red with missing tool indicators
+- Unified version numbers across all project files (alire.toml, result.gpr, Makefile)
+
+### Fixed
+- GPR project file version alignment with alire.toml
+- Improved Alire toolchain integration for better developer experience
+- Corrected tool availability checks in build system
+
+### Developer Experience
+- Better feedback when GNAT Pro tools (gnatcheck, gnatdoc, etc.) are not available
+- Improved build system reliability with Alire-managed toolchains
+- Enhanced Makefile documentation and error reporting
+
+## [1.0.2] - 2025-01-18
+
+### Changed
+- Restructured for Alire compliance with separate test crate
+- Version bump for Alire republication
+- Improved project structure and organization
+
+## [1.0.1] - 2025-01-17
+
+### Added
+- Pre- and post-conditions for enhanced safety
+- Comprehensive documentation improvements
+- Enhanced error validation and state consistency
+
+### Changed
+- Improved API design and consistency
+- Better error messages and debugging support
+- Restructured for Alire compliance
+
 ## [1.0.0] - 2025-01-17
 
 ### Added
@@ -49,42 +85,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Memory management testing
 - State consistency checks
 - Performance regression tests
-
-## [1.0.3] - 2025-01-19
-
-### Changed
-- Updated Makefile to use `alr exec --` for all GNAT tools
-- Enhanced help system to show unavailable tools in red with missing tool indicators
-- Unified version numbers across all project files (alire.toml, result.gpr, Makefile)
-
-### Fixed
-- GPR project file version alignment with alire.toml
-- Improved Alire toolchain integration for better developer experience
-- Corrected tool availability checks in build system
-
-### Developer Experience
-- Better feedback when GNAT Pro tools (gnatcheck, gnatdoc, etc.) are not available
-- Improved build system reliability with Alire-managed toolchains
-- Enhanced Makefile documentation and error reporting
-
-## [1.0.2] - 2025-01-18
-
-### Changed
-- Restructured for Alire compliance with separate test crate
-- Version bump for Alire republication
-- Improved project structure and organization
-
-## [1.0.1] - 2025-01-17
-
-### Added
-- Pre- and post-conditions for enhanced safety
-- Comprehensive documentation improvements
-- Enhanced error validation and state consistency
-
-### Changed
-- Improved API design and consistency
-- Better error messages and debugging support
-- Restructured for Alire compliance
 
 ## [Unreleased]
 
