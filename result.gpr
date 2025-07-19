@@ -7,7 +7,7 @@ with "config/result_config.gpr";
 project Result is
 
    for Library_Name use "result";
-   for Library_Version use "1.0.0";
+   for Library_Version use "1.0.3";
 
    for Source_Dirs use ("src/");
    for Object_Dir use "obj/" & Result_Config.Build_Profile;

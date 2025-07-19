@@ -4,7 +4,7 @@
 
 # Variables
 PROJECT_NAME = result
-VERSION = 1.0.1
+VERSION = 1.0.3
 ALIRE_TOML = alire.toml
 MAIN_SOURCE = src/result.ads
 TEST_SOURCE = tests/comprehensive_test_result.adb
